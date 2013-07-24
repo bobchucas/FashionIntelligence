@@ -1,15 +1,21 @@
 package com.fashionintelligence.newlook;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import javax.xml.soap.Node;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class Newlook {
 
@@ -41,34 +47,110 @@ public class Newlook {
 		} finally {
 
 			if (siteList.size() > 0) {
-				for (int i = 0; i < siteList.size(); i++) {
-					URL productUrl;
-					BufferedReader in;
-					try {
-						productUrl = new URL(siteList.get(i).toString());
-						in = new BufferedReader(new InputStreamReader(
-								productUrl.openStream()));
-						String productLine = in.readLine();
-					} catch (Exception e) {
-
-					} finally {
-
+				try {
+					File file = new File("output.csv");
+					if (!file.exists()) {
+						file.createNewFile();
 					}
+					FileWriter fw = new FileWriter(file.getAbsoluteFile());
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write("ID,Name,Size,Colour,Availability,Price");
+					bw.newLine();
+					for (int i = 1500; i < 1510; i++) {
+						String[] propertyString = null;
+						try {
+							Document doc = Jsoup
+									.connect(siteList.get(i))
+									.userAgent(
+											"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.2 Safari/537.36")
+									.get();
+							propertyString = extractProperties(doc);
+							if(propertyString!=null){
+							for (int j = 0; j < propertyString.length; j++) {
+								bw.write(propertyString[j] + ",");
+							}
+							bw.newLine();
+							System.out.println(i);
+							}else{
+								System.out.println(siteList.get(i)+" not a product page");
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+
+						} finally {
+
+						}
+					}
+					bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Array empty");
+				// System.out.println("Array empty");
 			}
 		}
 	}
 
-	public static String readString(InputStream inputStream) throws IOException {
-
-		ByteArrayOutputStream into = new ByteArrayOutputStream();
-		byte[] buf = new byte[4096];
-		for (int n; 0 < (n = inputStream.read(buf));) {
-			into.write(buf, 0, n);
+	public static String[] extractProperties(Document doc) {
+		if (!productPageCheck(doc)) {
+			return null;
+		} else {
+			String[] string = { extractId(doc), extractName(doc) , "Size",extractColour(doc),"Availability",extractPrice(doc)};
+			return string;
 		}
-		into.close();
-		return new String(into.toByteArray(), "UTF-8"); // Or whatever encoding
+	}
+
+	public static boolean productPageCheck(Document doc) {
+		Elements productPage = doc.getElementsByClass("product_display");
+		if (productPage.size() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static String extractId(Document doc) {
+		return doc.getElementsByAttributeValueMatching("itemprop", "productID")
+				.first().text();
+	}
+
+	public static String extractName(Document doc) {
+		return doc.getElementsByAttributeValueMatching("itemprop", "name")
+				.first().text();
+	}
+
+	public static String extractSize(Document doc) {
+		Elements sizeDropdown = doc.getElementsByClass("sizes");
+		// Elements sizes = sizeDropdown.getElementsByAttribute("value");
+		// String sizeValue =
+		// sizes.get(0).getElementsByAttribute("value").toString();
+		// System.out.println("size"+sizeDropdown);
+		return null;
+	}
+
+	public static String extractColour(Document doc) {
+		Elements colourOptions = doc.getElementsByClass("colour");
+		if(colourOptions.size()!=0){
+		return Integer.toString(colourOptions.first().getElementsByClass("colour-option").size());
+		}else{
+			return "No colour option";
+		}
+	}
+
+	public static String extractAvailability(Document doc) {
+		Element size = doc.getElementById("out_stock_message");
+		// System.out.println(size);
+		// if(size.getElementsByAttributeValue("style",
+		// "display: table").size()>0){
+		// System.out.println("in stock");
+		// }else{
+		// System.out.println("out of stock");
+		// }
+		return null;
+	}
+
+	public static String extractPrice(Document doc) {
+		return doc.getElementsByAttributeValueMatching("itemprop", "price")
+				.first().text();
 	}
 }

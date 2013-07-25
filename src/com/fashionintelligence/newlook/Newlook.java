@@ -81,11 +81,15 @@ public class Newlook {
 													.split("-")[0];
 											propertyString[4] = sizeString[k]
 													.split("-")[1].trim();
+										} else {
+											propertyString[2] = "-";
 										}
 										for (int l = 0; l < colours; l++) {
 											if (colours > 1) {
 												colourString = getColours(driver);
 												propertyString[3] = colourString[l];
+											} else {
+												propertyString[3] = "-";
 											}
 											for (int j = 0; j < propertyString.length; j++) {
 												bw.write(propertyString[j]
@@ -99,6 +103,8 @@ public class Newlook {
 										}
 									}
 								} else {
+									propertyString[2] = "-";
+									propertyString[3] = "-";
 									for (int j = 0; j < propertyString.length; j++) {
 										bw.write(propertyString[j] + ",");
 									}

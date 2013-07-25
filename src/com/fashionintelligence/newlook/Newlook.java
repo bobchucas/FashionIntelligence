@@ -8,14 +8,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public class Newlook {
 
@@ -54,40 +56,56 @@ public class Newlook {
 					}
 					FileWriter fw = new FileWriter(file.getAbsoluteFile());
 					BufferedWriter bw = new BufferedWriter(fw);
-					bw.write("ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,URL");
+					bw.write("ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,Date,URL");
 					bw.newLine();
 					WebDriver driver = new FirefoxDriver();
-					for (int i = 1500; i < 11500; i++) {
+					DateFormat dateFormat = new SimpleDateFormat(
+							"yyyy/MM/dd HH:mm:ss");
+					for (int i = 1600; i < 1610; i++) {
 						String[] propertyString = null;
 						try {
 							driver.get(siteList.get(i));
 							System.out.println(i);
 							propertyString = extractProperties(driver);
 							if (propertyString != null) {
-								int productCount = 1;
 								int colours = Integer
 										.parseInt(propertyString[3]);
-								if (colours == 0) {
-									propertyString[3] = "1";
-								}
-								String[] colourList = null;
-								if (colours > 1) {
-									// TODO sizes
-									productCount = colours;
-									colourList = getColours(driver);
-								}
-								for (int k = 0; k < productCount; k++) {
-									if (colourList != null) {
-										propertyString[3] = colourList[k];
-									} else {
-										propertyString[3] = "-";
+								int sizes = Integer.parseInt(propertyString[2]);
+								if (colours > 1 || sizes > 1) {
+									String[] colourString = null;
+									String[] sizeString = null;
+									for (int k = 0; k < sizes; k++) {
+										if (sizes > 1) {
+											sizeString = getSizes(driver);
+											propertyString[2] = sizeString[k]
+													.split("-")[0];
+											propertyString[4] = sizeString[k]
+													.split("-")[1].trim();
+										}
+										for (int l = 0; l < colours; l++) {
+											if (colours > 1) {
+												colourString = getColours(driver);
+												propertyString[3] = colourString[l];
+											}
+											for (int j = 0; j < propertyString.length; j++) {
+												bw.write(propertyString[j]
+														+ ",");
+											}
+											Date date = new Date();
+											bw.write(dateFormat.format(date)
+													+ ",");
+											bw.write(siteList.get(i));
+											bw.newLine();
+										}
 									}
+								} else {
 									for (int j = 0; j < propertyString.length; j++) {
 										bw.write(propertyString[j] + ",");
 									}
+									Date date = new Date();
+									bw.write(dateFormat.format(date) + ",");
 									bw.write(siteList.get(i));
 									bw.newLine();
-									// bw.write(doc.toString());
 								}
 							} else {
 								System.out.println(siteList.get(i)
@@ -98,6 +116,10 @@ public class Newlook {
 
 						} finally {
 
+						}
+						if (i % 100 == 0) {
+							driver.close();
+							driver = new FirefoxDriver();
 						}
 					}
 					bw.close();
@@ -156,10 +178,10 @@ public class Newlook {
 						By.cssSelector("option[value]"));
 				return Integer.toString(sizes.size());
 			} else {
-				return "-";
+				return "1";
 			}
 		} catch (Exception e) {
-			return "-";
+			return "1";
 		}
 	}
 
@@ -172,10 +194,10 @@ public class Newlook {
 				return Integer.toString(colourOptions.findElements(
 						By.className("colour-option")).size());
 			} else {
-				return "0";
+				return "1";
 			}
 		} catch (Exception e) {
-			return "0";
+			return "1";
 		}
 	}
 
@@ -226,6 +248,18 @@ public class Newlook {
 					.findElement(By.cssSelector("a")).getAttribute("title");
 		}
 		return colourList;
+
+	}
+
+	public static String[] getSizes(WebDriver driver) {
+		WebElement sizeDropdown = driver.findElement(By.className("sizes"));
+		List<WebElement> sizeOptions = sizeDropdown.findElements(By
+				.cssSelector("option[value]"));
+		String[] sizeList = new String[sizeOptions.size()];
+		for (int i = 0; i < sizeOptions.size(); i++) {
+			sizeList[i] = sizeOptions.get(i).getText();
+		}
+		return sizeList;
 
 	}
 

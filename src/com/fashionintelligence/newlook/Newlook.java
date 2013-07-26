@@ -56,15 +56,20 @@ public class Newlook {
 					}
 					FileWriter fw = new FileWriter(file.getAbsoluteFile());
 					BufferedWriter bw = new BufferedWriter(fw);
-					bw.write("ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,Date,URL");
+					bw.write("ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,Image,Date,URL");
 					bw.newLine();
 					WebDriver driver = new FirefoxDriver();
 					DateFormat dateFormat = new SimpleDateFormat(
 							"yyyy/MM/dd HH:mm:ss");
-					for (int i = 1600; i < 1610; i++) {
+					for (int i = 1600; i < 1603; i++) {
 						String[] propertyString = null;
 						try {
+							try{
 							driver.get(siteList.get(i));
+							}catch(Exception e){
+								driver = new FirefoxDriver();
+								driver.get(siteList.get(i));
+							}
 							System.out.println(i);
 							propertyString = extractProperties(driver);
 							if (propertyString != null) {
@@ -124,12 +129,14 @@ public class Newlook {
 
 						}
 						if (i % 100 == 0) {
-							driver.close();
+							try{
+							driver.quit();
+							}catch (Exception e){}
 							driver = new FirefoxDriver();
 						}
 					}
 					bw.close();
-					driver.close();
+					driver.quit();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -148,15 +155,15 @@ public class Newlook {
 			String[] string = { extractId(driver), extractName(driver),
 					extractSize(driver), colour, extractAvailability(driver),
 					extractPrice(driver), breadcrumb[0], breadcrumb[1],
-					sale(driver) };
+					sale(driver), extractImage(driver) };
 			return string;
 		}
 	}
 
 	public static boolean productPageCheck(WebDriver driver) {
-		WebElement productPage = driver.findElement(By
+		List<WebElement> productPage = driver.findElements(By
 				.className("product_display"));
-		if (productPage != null) {
+		if (productPage.size()>0) {
 			return true;
 		} else {
 			return false;
@@ -164,8 +171,6 @@ public class Newlook {
 	}
 
 	public static String extractId(WebDriver driver) {
-		// System.out.println("Element: "+driver.findElement(By.cssSelector("span[itemprop=productID]")));
-		// System.out.println("Text: "+driver.findElement(By.cssSelector("span[itemprop=productID]")).getText());
 		return driver.findElement(By.cssSelector("span[itemprop=productID]"))
 				.getText();
 	}
@@ -267,6 +272,12 @@ public class Newlook {
 		}
 		return sizeList;
 
+	}
+	
+	public static String extractImage(WebDriver driver) {
+		String imageUrl = driver.findElement(By.cssSelector("li.li_thumb img"))
+				.getAttribute("src");
+		return imageUrl.substring(0,imageUrl.indexOf("?"));
 	}
 
 	public static void waitForElement(WebElement element) {

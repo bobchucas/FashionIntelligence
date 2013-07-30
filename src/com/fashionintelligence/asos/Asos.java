@@ -19,11 +19,14 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public class Asos {
 
+	// TODO: Export extraction methods to external classes. Establish if
+	// possible to scale with other stores using abstract classes (difficult due
+	// to conflicting nature of elicitation of properties). Increase logging
+	// quality/output. Mavenise
 	public static void main(String[] args) {
 		ArrayList<String> siteList = new ArrayList<String>();
 		ArrayList<String> pageList = new ArrayList<String>();
@@ -47,85 +50,87 @@ public class Asos {
 					WebDriver driver = new HtmlUnitDriver();
 					DateFormat dateFormat = new SimpleDateFormat(
 							"yyyy/MM/dd HH:mm:ss");
-					for (int i = 300; i < 400; i++) {
-						String address= pageList.get(i);
-						if(address.contains("Prod/pgeproduct")){
-						String[] propertyString = null;
-						try {
+					for (int i = 0; i < pageList.size(); i++) {
+						String address = pageList.get(i);
+						if (address.contains("Prod/pgeproduct")) {
+							String[] propertyString = null;
 							try {
-								driver.get(address);
-							} catch (Exception e) {
-								driver = new HtmlUnitDriver();
-								driver.get(address);
-							}
-							System.out.println("Accessing product "+i+", "+address);
-							 propertyString = extractProperties(driver);
-							if (propertyString != null) {
-								int colours = Integer
-										.parseInt(propertyString[3]);
-								int sizes = Integer.parseInt(propertyString[2]);
-								if (colours > 1 || sizes > 1) {
-									String[] colourString = null;
-									String[] sizeString = null;
-									for (int k = 0; k < sizes; k++) {
-										if (sizes > 1) {
-											sizeString = getSizes(driver);
-											propertyString[2] = sizeString[k]
-													.split("-")[0];
-											propertyString[4] = sizeString[k]
-													.split("-")[1].trim();
-										} else {
-											propertyString[2] = "-";
-										}
-										for (int l = 0; l < colours; l++) {
-											if (colours > 1) {
-												colourString = getColours(driver);
-												propertyString[3] = colourString[l];
+								try {
+									driver.get(address);
+								} catch (Exception e) {
+									driver = new HtmlUnitDriver();
+									driver.get(address);
+								}
+								System.out.println("Accessing product " + i
+										+ ", " + address);
+								propertyString = extractProperties(driver);
+								if (propertyString != null) {
+									int colours = Integer
+											.parseInt(propertyString[3]);
+									int sizes = Integer
+											.parseInt(propertyString[2]);
+									if (colours > 1 || sizes > 1) {
+										String[] colourString = null;
+										String[] sizeString = null;
+										for (int k = 0; k < sizes; k++) {
+											if (sizes > 1) {
+												sizeString = getSizes(driver);
+												propertyString[2] = sizeString[k]
+														.split("-")[0];
+												propertyString[4] = sizeString[k]
+														.split("-")[1].trim();
 											} else {
-												propertyString[3] = "-";
+												propertyString[2] = "-";
 											}
-											for (int j = 0; j < propertyString.length; j++) {
-												bw.write(propertyString[j]
-														+ ",");
+											for (int l = 0; l < colours; l++) {
+												if (colours > 1) {
+													colourString = getColours(driver);
+													propertyString[3] = colourString[l];
+												} else {
+													propertyString[3] = "-";
+												}
+												for (int j = 0; j < propertyString.length; j++) {
+													bw.write(propertyString[j]
+															+ ",");
+												}
+												Date date = new Date();
+												bw.write(dateFormat
+														.format(date) + ",");
+												bw.write(pageList.get(i));
+												bw.newLine();
 											}
-											Date date = new Date();
-											bw.write(dateFormat.format(date)
-													+ ",");
-											bw.write(pageList.get(i));
-											bw.newLine();
 										}
+									} else {
+										propertyString[2] = "-";
+										propertyString[3] = "-";
+										for (int j = 0; j < propertyString.length; j++) {
+											bw.write(propertyString[j] + ",");
+										}
+										Date date = new Date();
+										bw.write(dateFormat.format(date) + ",");
+										bw.write(pageList.get(i));
+										bw.newLine();
 									}
 								} else {
-									propertyString[2] = "-";
-									propertyString[3] = "-";
-									for (int j = 0; j < propertyString.length; j++) {
-										bw.write(propertyString[j] + ",");
-									}
-									Date date = new Date();
-									bw.write(dateFormat.format(date) + ",");
-									bw.write(pageList.get(i));
-									bw.newLine();
+									System.out.println(pageList.get(i)
+											+ " not a product page");
 								}
-							} else {
-								System.out.println(pageList.get(i)
-										+ " not a product page");
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-
-						} finally {
-
-						}
-						if (i % 100 == 0) {
-							try {
-								driver.quit();
 							} catch (Exception e) {
+								e.printStackTrace();
+
+							} finally {
+
 							}
-							driver = new HtmlUnitDriver();
-						}
-						}else{
+							if (i % 100 == 0) {
+								try {
+									driver.quit();
+								} catch (Exception e) {
+								}
+								driver = new HtmlUnitDriver();
+							}
+						} else {
 							System.out.println("Non-product URL");
-					}
+						}
 					}
 					System.out.println("Loop finished");
 					bw.close();
@@ -142,18 +147,22 @@ public class Asos {
 	}
 
 	public static String[] extractProperties(WebDriver driver) {
-			String colour = extractColour(driver);
-			String[] breadcrumb = extractBreadcrumb(driver);
-			String[] string = { extractId(driver), extractName(driver),
-					extractSize(driver), colour, extractAvailability(driver),
-					extractPrice(driver), breadcrumb[0], breadcrumb[1],
-					sale(driver), extractImage(driver) };
-			return string;
+		String colour = extractColour(driver);
+		String[] breadcrumb = extractBreadcrumb(driver);
+		String sale = sale(driver);
+		String[] string = { extractId(driver), extractName(driver),
+				extractSize(driver), colour, extractAvailability(driver),
+				extractPrice(driver), breadcrumb[0], breadcrumb[1],
+				sale, extractImage(driver) };
+		if(sale!="No sale"){
+			string[8]=string[5];
+			string[5]=sale;
+		}
+		return string;
 	}
 
 	public static String extractId(WebDriver driver) {
-		return driver.findElement(By.cssSelector("span.productcode"))
-				.getText();
+		return driver.findElement(By.cssSelector("span.productcode")).getText();
 	}
 
 	public static String extractName(WebDriver driver) {
@@ -178,19 +187,20 @@ public class Asos {
 	}
 
 	public static String extractColour(WebDriver driver) {
-			List<WebElement> colourOptions = driver.findElements(
-					By.className("colour"));
-			if (colourOptions.size()>0) {
-				return Integer.toString(colourOptions.get(0).findElements(
-						By.cssSelector("option")).size()-1);
-			} else {
-				return "1";
-			}
+		List<WebElement> colourOptions = driver.findElements(By
+				.className("colour"));
+		if (colourOptions.size() > 0) {
+			return Integer.toString(colourOptions.get(0)
+					.findElements(By.cssSelector("option")).size() - 1);
+		} else {
+			return "1";
+		}
 	}
 
 	public static String extractAvailability(WebDriver driver) {
-		List<WebElement> stock = driver.findElements(By.className("outofstock"));
-		if (stock.size()>0 && stock.get(0).isDisplayed()) {
+		List<WebElement> stock = driver
+				.findElements(By.className("outofstock"));
+		if (stock.size() > 0 && stock.get(0).isDisplayed()) {
 			return "Out of stock";
 		} else {
 			return "In stock";
@@ -198,13 +208,15 @@ public class Asos {
 	}
 
 	public static String extractPrice(WebDriver driver) {
-		return driver.findElement(By.cssSelector("div.product_price span.product_price_details"))
+		return driver.findElement(
+				By.cssSelector("div.product_price span.product_price_details"))
 				.getText();
 	}
 
 	public static String sale(WebDriver driver) {
 		try {
-			WebElement colourOptions = driver.findElement(By.cssSelector("div.product_price span.previousprice"));
+			WebElement colourOptions = driver.findElement(By
+					.cssSelector("div.product_price span.previousprice"));
 			if (colourOptions != null) {
 				return colourOptions.getText().split(" ")[1].trim();
 			} else {
@@ -216,25 +228,30 @@ public class Asos {
 	}
 
 	public static String[] extractBreadcrumb(WebDriver driver) {
-		WebElement breadcrumb = driver.findElement(By.cssSelector("div.breadcrumbs span"));
+		WebElement breadcrumb = driver.findElement(By
+				.cssSelector("div.breadcrumbs span"));
 		List<WebElement> crumbs = breadcrumb.findElements(By.cssSelector("a"));
-		if(crumbs.size()>0){
-		String mainCat = crumbs.get(0).getText().replace(",", "");
-		String subCat = crumbs.get(1).getText().replace(",", "");
-		String[] crumb = { mainCat, subCat };
-		return crumb;
-		}else{
-			String[] crumb = {"-","-"};
+		if (crumbs.size() > 0) {
+			String mainCat = crumbs.get(0).getText().replace(",", "");
+			String subCat = "";
+			for(int i=1;i<crumbs.size();i++){
+			subCat += crumbs.get(i).getText().replace(",", "")+"; ";
+			}
+			String[] crumb = { mainCat, subCat };
+			return crumb;
+		} else {
+			String[] crumb = { "-", "-" };
 			return crumb;
 		}
+		
 	}
 
 	public static String[] getColours(WebDriver driver) {
 		List<WebElement> colourOptions = driver.findElements(By
 				.cssSelector("div.colour select option"));
 		String[] colourList = new String[colourOptions.size()];
-		for (int i = 0; i < colourOptions.size()-1; i++) {
-			colourList[i] = colourOptions.get(i+1).getAttribute("value");
+		for (int i = 0; i < colourOptions.size() - 1; i++) {
+			colourList[i] = colourOptions.get(i + 1).getAttribute("value");
 		}
 		return colourList;
 
@@ -294,7 +311,7 @@ public class Asos {
 			try {
 				URL url = new URL(siteList.get(i));
 				pageList.addAll(extractBaseSitemap(url));
-				System.out.println("Parsing sitemap "+i);
+				System.out.println("Parsing sitemap " + i);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -306,7 +323,7 @@ public class Asos {
 	public static boolean isValidProductUrl(String string) {
 		if (string.startsWith("http") && string.contains("asos.com")) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}

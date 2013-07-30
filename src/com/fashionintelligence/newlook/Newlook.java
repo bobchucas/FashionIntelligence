@@ -21,9 +21,12 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 public class Newlook {
 
+	// TODO: Export extraction methods to external classes. Establish if
+	// possible to scale with other stores using abstract classes (difficult due
+	// to conflicting nature of elicitation of properties). Increase logging
+	// quality/output. Mavenise
 	public static void main(String[] args) {
 		ArrayList<String> siteList = new ArrayList<String>();
-		System.setProperty("http.agent", "");
 		try {
 			URL url = new URL("http://www.newlook.com/sitemap.xml");
 			HttpURLConnection httpConnection = (HttpURLConnection) url
@@ -64,9 +67,9 @@ public class Newlook {
 					for (int i = 1600; i < 1603; i++) {
 						String[] propertyString = null;
 						try {
-							try{
-							driver.get(siteList.get(i));
-							}catch(Exception e){
+							try {
+								driver.get(siteList.get(i));
+							} catch (Exception e) {
 								driver = new FirefoxDriver();
 								driver.get(siteList.get(i));
 							}
@@ -129,9 +132,10 @@ public class Newlook {
 
 						}
 						if (i % 100 == 0) {
-							try{
-							driver.quit();
-							}catch (Exception e){}
+							try {
+								driver.quit();
+							} catch (Exception e) {
+							}
 							driver = new FirefoxDriver();
 						}
 					}
@@ -163,7 +167,7 @@ public class Newlook {
 	public static boolean productPageCheck(WebDriver driver) {
 		List<WebElement> productPage = driver.findElements(By
 				.className("product_display"));
-		if (productPage.size()>0) {
+		if (productPage.size() > 0) {
 			return true;
 		} else {
 			return false;
@@ -273,11 +277,11 @@ public class Newlook {
 		return sizeList;
 
 	}
-	
+
 	public static String extractImage(WebDriver driver) {
 		String imageUrl = driver.findElement(By.cssSelector("li.li_thumb img"))
 				.getAttribute("src");
-		return imageUrl.substring(0,imageUrl.indexOf("?"));
+		return imageUrl.substring(0, imageUrl.indexOf("?"));
 	}
 
 	public static void waitForElement(WebElement element) {

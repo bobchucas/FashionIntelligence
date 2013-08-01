@@ -55,12 +55,7 @@ public class Asos {
 						if (address.contains("Prod/pgeproduct")) {
 							String[] propertyString = null;
 							try {
-								try {
 									driver.get(address);
-								} catch (Exception e) {
-									driver = new HtmlUnitDriver();
-									driver.get(address);
-								}
 								System.out.println("Accessing product " + i
 										+ ", " + address);
 								propertyString = extractProperties(driver);
@@ -69,47 +64,58 @@ public class Asos {
 											.parseInt(propertyString[3]);
 									int sizes = Integer
 											.parseInt(propertyString[2]);
-									if (colours > 1 || sizes > 1) {
-										String[] colourString = null;
-										String[] sizeString = null;
-										for (int k = 0; k < sizes; k++) {
-											if (sizes > 1) {
-												sizeString = getSizes(driver);
-												propertyString[2] = sizeString[k]
-														.split("-")[0];
-												propertyString[4] = sizeString[k]
-														.split("-")[1].trim();
-											} else {
-												propertyString[2] = "-";
-											}
-											for (int l = 0; l < colours; l++) {
-												if (colours > 1) {
-													colourString = getColours(driver);
-													propertyString[3] = colourString[l];
-												} else {
-													propertyString[3] = "-";
-												}
-												for (int j = 0; j < propertyString.length; j++) {
-													bw.write(propertyString[j]
-															+ ",");
-												}
-												Date date = new Date();
-												bw.write(dateFormat
-														.format(date) + ",");
-												bw.write(pageList.get(i));
-												bw.newLine();
-											}
-										}
+									if (!propertyString[5].contains("£")) {
+										driver.quit();
+										driver=new HtmlUnitDriver();
+										i--;
+										System.out
+												.println("Browser interpreted as from wrong locale");
 									} else {
-										propertyString[2] = "-";
-										propertyString[3] = "-";
-										for (int j = 0; j < propertyString.length; j++) {
-											bw.write(propertyString[j] + ",");
+										if (colours > 1 || sizes > 1) {
+											String[] colourString = null;
+											String[] sizeString = null;
+											for (int k = 0; k < sizes; k++) {
+												if (sizes > 1) {
+													sizeString = getSizes(driver);
+													propertyString[2] = sizeString[k]
+															.split("-")[0];
+													propertyString[4] = sizeString[k]
+															.split("-")[1]
+															.trim();
+												} else {
+													propertyString[2] = "-";
+												}
+												for (int l = 0; l < colours; l++) {
+													if (colours > 1) {
+														colourString = getColours(driver);
+														propertyString[3] = colourString[l];
+													} else {
+														propertyString[3] = "-";
+													}
+													for (int j = 0; j < propertyString.length; j++) {
+														bw.write(propertyString[j]
+																+ ",");
+													}
+													Date date = new Date();
+													bw.write(dateFormat
+															.format(date) + ",");
+													bw.write(pageList.get(i));
+													bw.newLine();
+												}
+											}
+										} else {
+											propertyString[2] = "-";
+											propertyString[3] = "-";
+											for (int j = 0; j < propertyString.length; j++) {
+												bw.write(propertyString[j]
+														+ ",");
+											}
+											Date date = new Date();
+											bw.write(dateFormat.format(date)
+													+ ",");
+											bw.write(pageList.get(i));
+											bw.newLine();
 										}
-										Date date = new Date();
-										bw.write(dateFormat.format(date) + ",");
-										bw.write(pageList.get(i));
-										bw.newLine();
 									}
 								} else {
 									System.out.println(pageList.get(i)
@@ -120,13 +126,6 @@ public class Asos {
 
 							} finally {
 
-							}
-							if (i % 100 == 0) {
-								try {
-									driver.quit();
-								} catch (Exception e) {
-								}
-								driver = new HtmlUnitDriver();
 							}
 						} else {
 							System.out.println("Non-product URL");
@@ -152,11 +151,11 @@ public class Asos {
 		String sale = sale(driver);
 		String[] string = { extractId(driver), extractName(driver),
 				extractSize(driver), colour, extractAvailability(driver),
-				extractPrice(driver), breadcrumb[0], breadcrumb[1],
-				sale, extractImage(driver) };
-		if(sale!="No sale"){
-			string[8]=string[5];
-			string[5]=sale;
+				extractPrice(driver), breadcrumb[0], breadcrumb[1], sale,
+				extractImage(driver) };
+		if (sale != "No sale") {
+			string[8] = string[5];
+			string[5] = sale;
 		}
 		return string;
 	}
@@ -228,14 +227,14 @@ public class Asos {
 	}
 
 	public static String[] extractBreadcrumb(WebDriver driver) {
-		WebElement breadcrumb = driver.findElement(By
-				.cssSelector("div.breadcrumbs span"));
-		List<WebElement> crumbs = breadcrumb.findElements(By.cssSelector("a"));
-		if (crumbs.size() > 0) {
+		List<WebElement> breadcrumb = driver.findElements(By
+				.cssSelector("div.other-categories ul li"));
+		if (breadcrumb.size() > 0) {
+			List<WebElement> crumbs = breadcrumb.get(0).findElements(By.cssSelector("a"));
 			String mainCat = crumbs.get(0).getText().replace(",", "");
 			String subCat = "";
-			for(int i=1;i<crumbs.size();i++){
-			subCat += crumbs.get(i).getText().replace(",", "")+"; ";
+			for (int i = 1; i < crumbs.size(); i++) {
+				subCat += crumbs.get(i).getText().replace(",", "") + "; ";
 			}
 			String[] crumb = { mainCat, subCat };
 			return crumb;
@@ -243,7 +242,7 @@ public class Asos {
 			String[] crumb = { "-", "-" };
 			return crumb;
 		}
-		
+
 	}
 
 	public static String[] getColours(WebDriver driver) {

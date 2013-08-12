@@ -18,6 +18,9 @@
 package edu.uci.ics.crawler4j.zara;
 
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -27,6 +30,7 @@ import org.openqa.selenium.WebDriver;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
+import edu.uci.ics.crawler4j.topshop.Topshop;
 import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
@@ -34,6 +38,8 @@ import edu.uci.ics.crawler4j.url.WebURL;
  */
 public class BasicCrawler extends WebCrawler {
 	private int i=0;
+	private int j=0;
+	private String productString = "id=\"product\"";
 
 	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4"
 			+ "|wav|avi|mov|mpeg|ram|m4v|pdf" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
@@ -54,35 +60,71 @@ public class BasicCrawler extends WebCrawler {
 	 */
 	@Override
 	public void visit(Page page, PrintWriter bw, WebDriver driver) {
-		int docid = page.getWebURL().getDocid();
+		DateFormat dateFormat = new SimpleDateFormat(
+				"yyyy/MM/dd HH:mm:ss");
 		String url = page.getWebURL().getURL();
-		String domain = page.getWebURL().getDomain();
-		String path = page.getWebURL().getPath();
-		String subDomain = page.getWebURL().getSubDomain();
-		String parentUrl = page.getWebURL().getParentUrl();
-		String anchor = page.getWebURL().getAnchor();
-
-//		System.out.println("Docid: " + docid);
-		System.out.println("URL: " + url);
-//		System.out.println("Domain: '" + domain + "'");
-//		System.out.println("Sub-domain: '" + subDomain + "'");
-//		System.out.println("Path: '" + path + "'");
-//		System.out.println("Parent page: " + parentUrl);
-//		System.out.println("Anchor text: " + anchor);
+		System.out.println(i+": "+url);
 		
 		if (page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
-			String text = htmlParseData.getText();
 			String html = htmlParseData.getHtml();
-			List<WebURL> links = htmlParseData.getOutgoingUrls();
+			if(html.contains(productString)){
+//			List<WebURL> links = htmlParseData.getOutgoingUrls();
+//			System.out.println("Product #: " + j+" from "+i);
+			String[] propertyString = null;
+			try {
+				driver.get(url);
+				System.out.println(url);
+				propertyString = Topshop.extractProperties(driver);
+				if(propertyString!=null){
+				if (propertyString[4] != null) 
+					{
+					String[] sizeString = null;
+					sizeString = Topshop.getSizes(driver);
+					String [] stockString = null;
+					stockString = Topshop.getStock(driver);
+					int sizes = sizeString.length;
+					if(!propertyString[8].contains("sale")){
+						String sale=propertyString[2];
+						propertyString[2]=propertyString[8];
+						propertyString[8]=sale;
+					}
+					for(int k=0; k<sizes; k++)
+					{
+						if(sizes>1)
+						{
+						propertyString[4] = sizeString[k];
+						propertyString[5] = stockString[k];
+						}
+						else
+						{
+							propertyString[4] = "-";
+							propertyString[5] = "-";
+						}
+						for (int j = 0; j < propertyString.length; j++) 
+						{
+							bw.append(propertyString[j]
+											+ ",");
+						}	
+						Date date = new Date();
+						bw.append(dateFormat.format(date) + ",");
+						bw.append(url);
+						bw.append("\r\n");
+						}
+					}
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
 
-//			System.out.println("Text length: " + text.length());
-//			System.out.println("Html length: " + html.length());
-			System.out.println("Number of outgoing links: " + links.size());
-			System.out.println("i: " + i);
+			} finally {
+
+			}
+			j++;
+			}
 		}
 
-		Header[] responseHeaders = page.getFetchResponseHeaders();
+//		Header[] responseHeaders = page.getFetchResponseHeaders();
 //		if (responseHeaders != null) {
 //			System.out.println("Response headers:");
 //			for (Header header : responseHeaders) {
@@ -90,7 +132,6 @@ public class BasicCrawler extends WebCrawler {
 //			}
 //		}
 		
-		System.out.println("=============");
 		i++;
-	}
+}
 }

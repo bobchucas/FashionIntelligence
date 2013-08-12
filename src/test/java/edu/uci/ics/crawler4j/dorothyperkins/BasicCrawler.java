@@ -26,14 +26,14 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.WebDriver;
 
 import edu.uci.ics.crawler4j.crawler.Page;
-import edu.uci.ics.crawler4j.crawler.WebCrawler;
+import edu.uci.ics.crawler4j.crawler.FireFoxWebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
  * @author Yasser Ganjisaffar <lastname at gmail dot com>
  */
-public class BasicCrawler extends WebCrawler {
+public class BasicCrawler extends FireFoxWebCrawler {
 	private int i=0;
 	private String productString = "cmd_productdisplay";
 
@@ -64,52 +64,60 @@ public class BasicCrawler extends WebCrawler {
 		if (page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
 			String html = htmlParseData.getHtml();
+			System.out.println("Getting html");
 			if(html.contains(productString)){
-//			List<WebURL> links = htmlParseData.getOutgoingUrls();
-//			System.out.println("Product #: " + j+" from "+i);
+				System.out.println("HTML indicates product page");
 			String[] propertyString = null;
 			try {
 				driver.get(url);
 				System.out.println(url);
 				propertyString = DorothyPerkins.extractProperties(driver);
-				if(propertyString!=null){
-				if (propertyString[4] != null) 
-					{
-					String[] sizeString = null;
-					sizeString = DorothyPerkins.getSizes(driver);
-//					String [] stockString = null;
-//					stockString = DorothyPerkins.getStock(driver);
-					int sizes = sizeString.length;
-					if(!propertyString[8].contains("sale")){
-						String sale=propertyString[2];
-						propertyString[2]=propertyString[8];
-						propertyString[8]=sale;
-					}
-					for(int k=0; k<sizes; k++)
-					{
-						if(sizes>1)
-						{
-						propertyString[4] = sizeString[k];
-//						propertyString[5] = stockString[k];
+				if (propertyString != null) {
+					int colours = Integer
+							.parseInt(propertyString[3]);
+					int sizes = Integer.parseInt(propertyString[4]);
+//					if (colours > 1 || sizes > 1) {
+////						String[] colourString = null;
+//						String[] sizeString = null;
+//						for (int k = 0; k < sizes; k++) {
+//							if (sizes > 1) {
+//								sizeString = DorothyPerkins.getSizes(driver);
+//								propertyString[4]=sizeString[k];
+//							} else {
+//								propertyString[4] = "-";
+//							}
+//							for (int l = 0; l < colours; l++) {
+//								if (colours > 1) {
+////									colourString = DorothyPerkins.getColours(driver);
+////									propertyString[3] = colourString[l];
+//								} else {
+//									propertyString[3] = "-";
+//								}
+//								for (int j = 0; j < propertyString.length; j++) {
+//									bw.append(propertyString[j]
+//											+ ",");
+//								}
+//								Date date = new Date();
+//								bw.append(dateFormat.format(date)
+//										+ ",");
+//								bw.append(url);
+//								bw.append("\r\n");
+//							}
+//						}
+//					} else {
+//						propertyString[3] = "-";
+//						propertyString[4] = "-";
+						for (int j = 0; j < propertyString.length; j++) {
+							bw.append(propertyString[j] + ",");
 						}
-						else
-						{
-							propertyString[4] = "-";
-							propertyString[5] = "-";
-						}
-						for (int j = 0; j < propertyString.length; j++) 
-						{
-							bw.append(propertyString[j]
-											+ ",");
-						}	
 						Date date = new Date();
 						bw.append(dateFormat.format(date) + ",");
 						bw.append(url);
 						bw.append("\r\n");
-						}
+						System.out.println("BW writing");
 					}
 				}
-			}
+//				}
 			catch (Exception e) {
 				e.printStackTrace();
 

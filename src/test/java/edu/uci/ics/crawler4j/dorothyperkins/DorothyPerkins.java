@@ -30,7 +30,8 @@ public class DorothyPerkins {
 	}
 
 	public static String extractSize(WebDriver driver) {
-		List<WebElement> multipleValues = driver.findElements(By.cssSelector("ul.product_size_grid li"));
+		WebElement sizeGrid = driver.findElements(By.className("product_size_grid")).get(0);
+		List<WebElement> multipleValues = sizeGrid.findElements(By.cssSelector("li"));
 		if (multipleValues != null) {
 			return Integer.toString(multipleValues.size());
 		} else
@@ -42,7 +43,7 @@ public class DorothyPerkins {
 	}
 
 	public static String extractColour(WebDriver driver) {
-		return "-";
+		return "1";
 	}
 
 	public static String extractPrice(WebDriver driver) {
@@ -67,7 +68,7 @@ public class DorothyPerkins {
 	}
 
 	public static String[] extractBreadcrumb(WebDriver driver) {
-		WebElement breadcrumb = driver.findElement(By.id("nav_breadcrumb"));
+		WebElement breadcrumb = waitForElement(driver.findElement(By.id("nav_breadcrumb")));
 		List<WebElement> crumbs = breadcrumb.findElements(By.cssSelector("li"));
 		String mainCat="-";
 		String subCat="-";
@@ -115,7 +116,7 @@ public class DorothyPerkins {
 		return stockList;
 	}
 
-	public static void waitForElement(WebElement element) {
+	public static WebElement waitForElement(WebElement element) {
 		for (int second = 0; second < 5; second++) {
 			if (element.isDisplayed()) {
 				break;
@@ -126,5 +127,6 @@ public class DorothyPerkins {
 				e.printStackTrace();
 			}
 		}
+		return element;
 	}
 }

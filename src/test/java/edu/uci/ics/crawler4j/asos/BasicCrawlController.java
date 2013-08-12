@@ -34,7 +34,7 @@ public class BasicCrawlController {
 		 * crawlStorageFolder is a folder where intermediate crawl data is
 		 * stored.
 		 */
-		String crawlStorageFolder = "src/main/resources/topshop";
+		String crawlStorageFolder = "src/main/resources/asos";
 
 		/*
 		 * numberOfCrawlers shows the number of concurrent threads that should

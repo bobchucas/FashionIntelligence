@@ -211,7 +211,7 @@ public class WebCrawler implements Runnable {
 		File file = new File("output.csv");
 		FileWriter fw = null;
 		PrintWriter bw = null;
-		WebDriver driver;
+		WebDriver driver=null;
 		try {
 			if (file.exists()) {
 				file.delete();

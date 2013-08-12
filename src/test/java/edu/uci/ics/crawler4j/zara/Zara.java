@@ -63,7 +63,7 @@ public class Zara {
 	public static String sale(WebDriver driver) {
 		try {
 			String salePrice = driver.findElement(
-					By.cssSelector("p.price span.diagonal-line")).getText().trim().split(" ")[0];
+					By.cssSelector("p.price span.diagonal-line")).getText();
 			if (salePrice != null) {
 				return "£"+salePrice;
 			} else {
@@ -75,7 +75,7 @@ public class Zara {
 	}
 
 	public static String[] extractBreadcrumb(WebDriver driver) {
-		WebElement breadcrumb = driver.findElement(By.cssSelector("div.breadcrumb"));
+		WebElement breadcrumb = driver.findElement(By.cssSelector("div.breadcrumbs"));
 		List<WebElement> crumbs = breadcrumb.findElements(By.cssSelector("li"));
 		String mainCat = "-";
 		String subCat = "-";
@@ -87,13 +87,13 @@ public class Zara {
 		case 2:
 			break;
 		case 3:
-			mainCat = crumbs.get(1).getText();
+			mainCat = crumbs.get(1).getText().split(">")[0].trim();
 		case 4:
-			mainCat = crumbs.get(1).getText();
-			subCat = crumbs.get(2).getText();
+			mainCat = crumbs.get(1).getText().split(">")[0].trim();
+			subCat = crumbs.get(2).getText().split(">")[0].trim();
 		default:
-			mainCat = crumbs.get(1).getText();
-			subCat = crumbs.get(2).getText();
+			mainCat = crumbs.get(1).getText().split(">")[0].trim();
+			subCat = crumbs.get(2).getText().split(">")[0].trim();
 			for (int i = 0; i < crumbs.size() - 4; i++) {
 				subCat += ";" + crumbs.get(i + 3);
 			}
@@ -107,8 +107,13 @@ public class Zara {
 		List<WebElement> multipleValues = driver.findElement(
 				By.className("size-select")).findElements(
 				By.className("product-size"));
-		
-		String[] sizeList = {"do", "this"};
+		String[] sizeList = new String[multipleValues.size()];
+		for(int i=0;i<multipleValues.size();i++){
+			sizeList[i]=multipleValues.get(i).getText().trim();
+			if(multipleValues.get(i).getClass().toString().contains("disabled")){
+				sizeList[i]+="-OS";
+			}
+		}
 		return sizeList;
 	}
 

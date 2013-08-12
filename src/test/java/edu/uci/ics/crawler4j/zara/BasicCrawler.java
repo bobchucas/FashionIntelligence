@@ -21,16 +21,13 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.http.Header;
 import org.openqa.selenium.WebDriver;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
-import edu.uci.ics.crawler4j.topshop.Topshop;
 import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
@@ -75,14 +72,14 @@ public class BasicCrawler extends WebCrawler {
 			try {
 				driver.get(url);
 				System.out.println(url);
-				propertyString = Topshop.extractProperties(driver);
+				propertyString = Zara.extractProperties(driver);
 				if(propertyString!=null){
 				if (propertyString[4] != null) 
 					{
 					String[] sizeString = null;
-					sizeString = Topshop.getSizes(driver);
-					String [] stockString = null;
-					stockString = Topshop.getStock(driver);
+					sizeString = Zara.getSizes(driver);
+//					String [] stockString = null;
+//					stockString = Zara.getStock(driver);
 					int sizes = sizeString.length;
 					if(!propertyString[8].contains("sale")){
 						String sale=propertyString[2];
@@ -93,13 +90,8 @@ public class BasicCrawler extends WebCrawler {
 					{
 						if(sizes>1)
 						{
-						propertyString[4] = sizeString[k];
-						propertyString[5] = stockString[k];
-						}
-						else
-						{
-							propertyString[4] = "-";
-							propertyString[5] = "-";
+//						propertyString[4] = sizeString[k];
+//						propertyString[5] = stockString[k];
 						}
 						for (int j = 0; j < propertyString.length; j++) 
 						{

@@ -21,15 +21,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 import edu.uci.ics.crawler4j.fetcher.CustomFetchStatus;
 import edu.uci.ics.crawler4j.fetcher.PageFetchResult;
@@ -48,10 +46,8 @@ import edu.uci.ics.crawler4j.url.WebURL;
  * 
  * @author Yasser Ganjisaffar <lastname at gmail dot com>
  */
-public class WebCrawler implements Runnable {
-	
-	private static String retailer = System.getProperty("retailer.name");
-	
+public class FirefoxWebCrawler implements Runnable {
+
 	protected static final Logger logger = Logger.getLogger(WebCrawler.class
 			.getName());
 
@@ -212,12 +208,10 @@ public class WebCrawler implements Runnable {
 
 	public void run() {
 		onStart();
-		Date date = new Date();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-		File file = new File(retailer+"_"+dateFormat.format(date)+".csv");
+		File file = new File("output.csv");
 		FileWriter fw = null;
 		PrintWriter bw = null;
-		WebDriver driver=null;
+		WebDriver driver=new FirefoxDriver();
 		try {
 			if (file.exists()) {
 				file.delete();
@@ -231,7 +225,10 @@ public class WebCrawler implements Runnable {
 		bw.append("Retailer,ID,Name,Price,Colour,Size,Stock,Category 1,Category 2,Sale,Image,Date,URL");
 		bw.append("\r\n");
 		while (true) {
-			driver = new HtmlUnitDriver(true);
+			if(driver!=null){
+				driver.close();
+			}
+			driver = new FirefoxDriver();
 			bw = new PrintWriter(fw);
 			List<WebURL> assignedURLs = new ArrayList<>(50);
 			isWaitingForNewURLs = true;

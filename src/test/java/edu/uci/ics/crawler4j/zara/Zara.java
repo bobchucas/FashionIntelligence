@@ -16,7 +16,7 @@ public class Zara {
 		String[] string = { extractId(driver), extractName(driver),
 				extractPrice(driver), extractColour(driver),
 				extractSize(driver), extractAvailability(driver),
-				breadcrumb[0], breadcrumb[1], sale(driver) };
+				breadcrumb[0], breadcrumb[1], sale(driver), getImage(driver) };
 		return string;
 	}
 
@@ -31,6 +31,8 @@ public class Zara {
 	}
 
 	public static String extractSize(WebDriver driver) {
+		WebElement button = driver.findElement(By.id("size-btn"));
+		button.click();
 		List<WebElement> multipleValues = driver.findElement(
 				By.className("size-select")).findElements(
 				By.className("product-size"));
@@ -56,8 +58,8 @@ public class Zara {
 
 	public static String extractPrice(WebDriver driver) {
 		String price = driver.findElement(
-				By.className("price")).getText().trim().split(" ")[0];
-		return "£"+price;
+				By.cssSelector("p.price span.price")).getAttribute("data-price").split(" ")[0];
+		return price;
 	}
 
 	public static String sale(WebDriver driver) {
@@ -65,7 +67,7 @@ public class Zara {
 			String salePrice = driver.findElement(
 					By.cssSelector("p.price span.diagonal-line")).getText();
 			if (salePrice != null) {
-				return "£"+salePrice;
+				return salePrice;
 			} else {
 				return "No sale";
 			}
@@ -106,11 +108,11 @@ public class Zara {
 	public static String[] getSizes(WebDriver driver) {
 		List<WebElement> multipleValues = driver.findElement(
 				By.className("size-select")).findElements(
-				By.className("product-size"));
+				By.cssSelector("tr.product-size"));
 		String[] sizeList = new String[multipleValues.size()];
 		for(int i=0;i<multipleValues.size();i++){
-			sizeList[i]=multipleValues.get(i).getText().trim();
-			if(multipleValues.get(i).getClass().toString().contains("disabled")){
+			sizeList[i]=multipleValues.get(i).findElement(By.className("size-name")).getText();
+			if(multipleValues.get(i).toString().contains("disabled")){
 				sizeList[i]+="-OS";
 			}
 		}
@@ -129,4 +131,20 @@ public class Zara {
 			}
 		}
 	}
+	
+	public static String getImage(WebDriver driver) {
+			String image = driver.findElement(
+					By.cssSelector("div.bigImageContainer div.full img")).getAttribute("src");
+				return image;
+	}
+	
+	public static String[] getColours(WebDriver driver) {
+		List<WebElement> colourBox = driver.findElement(By.className("colors")).findElements(By.cssSelector("label"));
+		String[] colours = new String[colourBox.size()];
+		for(int i=0;i<colours.length;i++){
+			colours[i]=colourBox.get(i).findElement(By.cssSelector("a")).getAttribute("title");
+//			}
+		}
+			return colours;
+}
 }

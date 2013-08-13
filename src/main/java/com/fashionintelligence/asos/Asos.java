@@ -19,17 +19,18 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public class Asos {
 
-	// TODO: Export extraction methods to external classes. Establish if
-	// possible to scale with other stores using abstract classes (difficult due
-	// to conflicting nature of elicitation of properties). Increase logging
-	// quality/output. Mavenise
 	public static void main(String[] args) {
 		ArrayList<String> siteList = new ArrayList<String>();
 		ArrayList<String> pageList = new ArrayList<String>();
+		Date fileDate = new Date();
+		DateFormat fileFormat = new SimpleDateFormat("yyyyMMdd");
+		String retailer = "Asos";
+		String availabilityString = "Not Available";
 		try {
 			URL url = new URL("http://www.asos.com/sitemap.ashx");
 			siteList = extractBaseSitemap(url);
@@ -39,23 +40,24 @@ public class Asos {
 		} finally {
 			if (pageList.size() > 0) {
 				try {
-					File file = new File("output.csv");
+					File file = new File(retailer + "_"
+							+ fileFormat.format(fileDate));
 					if (!file.exists()) {
 						file.createNewFile();
 					}
 					FileWriter fw = new FileWriter(file.getAbsoluteFile());
 					BufferedWriter bw = new BufferedWriter(fw);
-					bw.write("ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,Image,Date,URL");
+					bw.write("Retailer,ID,Name,Size Choice,Colour Choice,Availability,Price,Category1,Category2,Sale,Image,Date,URL");
 					bw.newLine();
-					WebDriver driver = new HtmlUnitDriver();
+					WebDriver driver = new FirefoxDriver();
 					DateFormat dateFormat = new SimpleDateFormat(
 							"yyyy/MM/dd HH:mm:ss");
 					for (int i = 0; i < pageList.size(); i++) {
 						String address = pageList.get(i);
-						if (address.contains("Prod/pgeproduct")) {
+						if (address.contains("pgeproduct")) {
 							String[] propertyString = null;
 							try {
-									driver.get(address);
+								driver.get(address);
 								System.out.println("Accessing product " + i
 										+ ", " + address);
 								propertyString = extractProperties(driver);
@@ -66,55 +68,46 @@ public class Asos {
 											.parseInt(propertyString[2]);
 									if (!propertyString[5].contains("£")) {
 										driver.quit();
-										driver=new HtmlUnitDriver();
-										i--;
+										driver = new FirefoxDriver();
+										// i--;
 										System.out
 												.println("Browser interpreted as from wrong locale");
 									} else {
-										if (colours > 1 || sizes > 1) {
-											String[] colourString = null;
-											String[] sizeString = null;
+										String[] colourString = null;
+										String[] sizeString = null;
+										for (int l = 0; l < colours; l++) {
+											colourString = getColours(driver);
+											propertyString[3] = colourString[l];
 											for (int k = 0; k < sizes; k++) {
 												if (sizes > 1) {
 													sizeString = getSizes(driver);
-													propertyString[2] = sizeString[k]
-															.split("-")[0];
-													propertyString[4] = sizeString[k]
-															.split("-")[1]
-															.trim();
+													if (sizeString[k]
+															.contains(availabilityString)) {
+														sizeString[k] = sizeString[k]
+																.substring(
+																		0,
+																		sizeString[k]
+																				.lastIndexOf("-"))
+																.trim();
+														propertyString[4] = availabilityString;
+													} else {
+														propertyString[4] = "In Stock";
+													}
+													propertyString[2] = sizeString[k];
 												} else {
 													propertyString[2] = "-";
 												}
-												for (int l = 0; l < colours; l++) {
-													if (colours > 1) {
-														colourString = getColours(driver);
-														propertyString[3] = colourString[l];
-													} else {
-														propertyString[3] = "-";
-													}
-													for (int j = 0; j < propertyString.length; j++) {
-														bw.write(propertyString[j]
-																+ ",");
-													}
-													Date date = new Date();
-													bw.write(dateFormat
-															.format(date) + ",");
-													bw.write(pageList.get(i));
-													bw.newLine();
+												bw.write("ASOS,");
+												for (int j = 0; j < propertyString.length; j++) {
+													bw.write(propertyString[j]
+															+ ",");
 												}
+												Date date = new Date();
+												bw.write(dateFormat
+														.format(date) + ",");
+												bw.write(pageList.get(i));
+												bw.newLine();
 											}
-										} else {
-											propertyString[2] = "-";
-											propertyString[3] = "-";
-											for (int j = 0; j < propertyString.length; j++) {
-												bw.write(propertyString[j]
-														+ ",");
-											}
-											Date date = new Date();
-											bw.write(dateFormat.format(date)
-													+ ",");
-											bw.write(pageList.get(i));
-											bw.newLine();
 										}
 									}
 								} else {
@@ -139,8 +132,6 @@ public class Asos {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			} else {
-				// System.out.println("Array empty");
 			}
 		}
 	}
@@ -171,12 +162,11 @@ public class Asos {
 
 	public static String extractSize(WebDriver driver) {
 		try {
-			List<WebElement> sizeDropdown = driver.findElements(By
-					.className("size"));
-			if (sizeDropdown.size() > 0) {
-				List<WebElement> sizes = sizeDropdown.get(0).findElements(
-						By.cssSelector("div select option[value]"));
-				return Integer.toString(sizes.size());
+			WebElement sizeDropdown = driver.findElement(By.className("size"));
+			if (sizeDropdown != null) {
+				List<WebElement> sizes = sizeDropdown.findElements(By
+						.cssSelector("option"));
+				return Integer.toString(sizes.size() - 1);
 			} else {
 				return "1";
 			}
@@ -230,7 +220,8 @@ public class Asos {
 		List<WebElement> breadcrumb = driver.findElements(By
 				.cssSelector("div.other-categories ul li"));
 		if (breadcrumb.size() > 0) {
-			List<WebElement> crumbs = breadcrumb.get(0).findElements(By.cssSelector("a"));
+			List<WebElement> crumbs = breadcrumb.get(0).findElements(
+					By.cssSelector("a"));
 			String mainCat = crumbs.get(0).getText().replace(",", "");
 			String subCat = "";
 			for (int i = 1; i < crumbs.size(); i++) {
@@ -257,12 +248,12 @@ public class Asos {
 	}
 
 	public static String[] getSizes(WebDriver driver) {
-		WebElement sizeDropdown = driver.findElement(By.className("sizes"));
+		WebElement sizeDropdown = driver.findElement(By.className("size"));
 		List<WebElement> sizeOptions = sizeDropdown.findElements(By
 				.cssSelector("option[value]"));
 		String[] sizeList = new String[sizeOptions.size()];
-		for (int i = 0; i < sizeOptions.size(); i++) {
-			sizeList[i] = sizeOptions.get(i).getText();
+		for (int i = 0; i < sizeOptions.size() - 1; i++) {
+			sizeList[i] = sizeOptions.get(i + 1).getText();
 		}
 		return sizeList;
 
@@ -324,6 +315,19 @@ public class Asos {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	public static void waitForElement(WebElement element) {
+		for (int second = 0; second < 5; second++) {
+			if (element.isDisplayed()) {
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

@@ -26,16 +26,16 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.WebDriver;
 
 import edu.uci.ics.crawler4j.crawler.Page;
-import edu.uci.ics.crawler4j.crawler.FireFoxWebCrawler;
+import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
  * @author Yasser Ganjisaffar <lastname at gmail dot com>
  */
-public class BasicCrawler extends FireFoxWebCrawler {
+public class BasicCrawler extends WebCrawler {
 	private int i=0;
-	private String productString = "cmd_productdisplay";
+	private String productString = "cmd_prßoductdisplay";
 
 	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4"
 			+ "|wav|avi|mov|mpeg|ram|m4v|pdf" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
@@ -76,37 +76,37 @@ public class BasicCrawler extends FireFoxWebCrawler {
 					int colours = Integer
 							.parseInt(propertyString[3]);
 					int sizes = Integer.parseInt(propertyString[4]);
-//					if (colours > 1 || sizes > 1) {
-////						String[] colourString = null;
-//						String[] sizeString = null;
-//						for (int k = 0; k < sizes; k++) {
-//							if (sizes > 1) {
-//								sizeString = DorothyPerkins.getSizes(driver);
-//								propertyString[4]=sizeString[k];
-//							} else {
-//								propertyString[4] = "-";
-//							}
-//							for (int l = 0; l < colours; l++) {
-//								if (colours > 1) {
-////									colourString = DorothyPerkins.getColours(driver);
-////									propertyString[3] = colourString[l];
-//								} else {
-//									propertyString[3] = "-";
-//								}
-//								for (int j = 0; j < propertyString.length; j++) {
-//									bw.append(propertyString[j]
-//											+ ",");
-//								}
-//								Date date = new Date();
-//								bw.append(dateFormat.format(date)
-//										+ ",");
-//								bw.append(url);
-//								bw.append("\r\n");
-//							}
-//						}
-//					} else {
-//						propertyString[3] = "-";
-//						propertyString[4] = "-";
+					if (colours > 1 || sizes > 1) {
+//						String[] colourString = null;
+						String[] sizeString = null;
+						for (int k = 0; k < sizes; k++) {
+							if (sizes > 1) {
+								sizeString = DorothyPerkins.getSizes(driver);
+								propertyString[4]=sizeString[k];
+							} else {
+								propertyString[4] = "-";
+							}
+							for (int l = 0; l < colours; l++) {
+								if (colours > 1) {
+//									colourString = DorothyPerkins.getColours(driver);
+//									propertyString[3] = colourString[l];
+								} else {
+									propertyString[3] = "-";
+								}
+								for (int j = 0; j < propertyString.length; j++) {
+									bw.append(propertyString[j]
+											+ ",");
+								}
+								Date date = new Date();
+								bw.append(dateFormat.format(date)
+										+ ",");
+								bw.append(url);
+								bw.append("\r\n");
+							}
+						}
+					} else {
+						propertyString[3] = "-";
+						propertyString[4] = "-";
 						for (int j = 0; j < propertyString.length; j++) {
 							bw.append(propertyString[j] + ",");
 						}
@@ -117,7 +117,7 @@ public class BasicCrawler extends FireFoxWebCrawler {
 						System.out.println("BW writing");
 					}
 				}
-//				}
+				}
 			catch (Exception e) {
 				e.printStackTrace();
 

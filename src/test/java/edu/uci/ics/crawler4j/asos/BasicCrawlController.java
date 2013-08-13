@@ -40,7 +40,7 @@ public class BasicCrawlController {
 		 * numberOfCrawlers shows the number of concurrent threads that should
 		 * be initiated for crawling.
 		 */
-		int numberOfCrawlers = 1;
+		int numberOfCrawlers = 10;
 
 		CrawlConfig config = new CrawlConfig();
 
@@ -62,7 +62,7 @@ public class BasicCrawlController {
 		 * You can set the maximum number of pages to crawl. The default value
 		 * is -1 for unlimited number of pages
 		 */
-		config.setMaxPagesToFetch(200);
+		config.setMaxPagesToFetch(-1);
 
 		/*
 		 * Do you need to set a proxy? If so, you can use:
@@ -96,7 +96,7 @@ public class BasicCrawlController {
 		 * which are found in these pages
 		 */
 
-		controller.addSeed("http://www.topshop.com/?geoip=home");
+		controller.addSeed("http://www.asos.com/hrd=1");
 
 		/*
 		 * Start the crawl. This is a blocking operation, meaning that your code

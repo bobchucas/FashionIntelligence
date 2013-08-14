@@ -34,12 +34,15 @@ import edu.uci.ics.crawler4j.url.WebURL;
  * @author Yasser Ganjisaffar <lastname at gmail dot com>
  */
 public class BasicCrawler extends WebCrawler {
-	private int i=0;
-	private int j=0;
+	private int i = 0;
+	private int j = 0;
 	private String productString = "cmd_productdisplay";
 
-	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g" + "|png|tiff?|mid|mp2|mp3|mp4"
-			+ "|wav|avi|mov|mpeg|ram|m4v|pdf" + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
+	private final static Pattern FILTERS = Pattern
+			.compile(".*(\\.(css|js|bmp|gif|jpe?g"
+					+ "|png|tiff?|mid|mp2|mp3|mp4"
+					+ "|wav|avi|mov|mpeg|ram|m4v|pdf"
+					+ "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
 
 	/**
 	 * You should implement this function to specify whether the given url
@@ -48,7 +51,9 @@ public class BasicCrawler extends WebCrawler {
 	@Override
 	public boolean shouldVisit(WebURL url) {
 		String href = url.getURL().toLowerCase();
-		return !FILTERS.matcher(href).matches()  && href.startsWith("http://www.topshop.com") && !href.contains("efinement");
+		return !FILTERS.matcher(href).matches()
+				&& href.startsWith("http://www.topshop.com")
+				&& !href.contains("efinement");
 	}
 
 	/**
@@ -57,82 +62,74 @@ public class BasicCrawler extends WebCrawler {
 	 */
 	@Override
 	public void visit(Page page, PrintWriter bw, WebDriver driver) {
-		DateFormat dateFormat = new SimpleDateFormat(
-				"yyyy/MM/dd HH:mm:ss");
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		String url = page.getWebURL().getURL();
-		System.out.println(i+": "+url);
-		
+		System.out.println(i + ": " + url);
+
 		if (page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
 			String html = htmlParseData.getHtml();
-			if(html.contains(productString)){
-//			List<WebURL> links = htmlParseData.getOutgoingUrls();
-//			System.out.println("Product #: " + j+" from "+i);
-			String[] propertyString = null;
-			try {
-				driver.get(url);
-				System.out.println(url);
-				propertyString = Topshop.extractProperties(driver);
-				if(propertyString!=null){
-				if (propertyString[4] != null) 
-					{
-					String[] sizeString = null;
-					sizeString = Topshop.getSizes(driver);
-					String [] stockString = null;
-					stockString = Topshop.getStock(driver);
-					int sizes = sizeString.length;
-					if(!propertyString[8].contains("sale")){
-						String sale=propertyString[2];
-						propertyString[2]=propertyString[8];
-						propertyString[8]=sale;
-					}
-					for(int k=0; k<sizes; k++)
-					{
-						if(sizes>1)
-						{
-						propertyString[4] = sizeString[k];
-						if(Integer.parseInt(stockString[k])>0){
-							propertyString[5]="In Stock";
-						}else{
-							propertyString[5]="Out Of Stock";
-						}
-						}
-						else
-						{
-							propertyString[4] = "-";
-						}
-							bw.append(retailer+",");
-						for (int j = 0; j < propertyString.length; j++) 
-						{
-							bw.append(propertyString[j]
-											+ ",");
-						}	
-						Date date = new Date();
-						bw.append(dateFormat.format(date) + ",");
-						bw.append(url);
-						bw.append("\r\n");
+			if (html.contains(productString)) {
+				// List<WebURL> links = htmlParseData.getOutgoingUrls();
+				// System.out.println("Product #: " + j+" from "+i);
+				String[] propertyString = null;
+				try {
+					driver.get(url);
+					System.out.println(url);
+					propertyString = Topshop.extractProperties(driver);
+					if (propertyString != null) {
+						if (propertyString[4] != null) {
+							String[] sizeString = null;
+							sizeString = Topshop.getSizes(driver);
+							String[] stockString = null;
+							stockString = Topshop.getStock(driver);
+							int sizes = sizeString.length;
+							if (!propertyString[8].contains("sale")) {
+								String sale = propertyString[2];
+								propertyString[2] = propertyString[8];
+								propertyString[8] = sale;
+							}
+							for (int k = 0; k < sizes; k++) {
+								if (sizes > 1) {
+									propertyString[4] = sizeString[k];
+								} else {
+									propertyString[4] = "-";
+								}
+								if (Integer.parseInt(stockString[k]) > 0) {
+									propertyString[5] = "In Stock";
+								} else {
+									propertyString[5] = "Out Of Stock";
+								}
+								bw.append(retailer + ",");
+								for (int j = 0; j < propertyString.length; j++) {
+									bw.append(propertyString[j] + ",");
+								}
+								Date date = new Date();
+								bw.append(dateFormat.format(date) + ",");
+								bw.append(url);
+								bw.append("\r\n");
+							}
 						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
+
+				} finally {
+
 				}
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-
-			} finally {
-
-			}
-			j++;
+				j++;
 			}
 		}
 
-//		Header[] responseHeaders = page.getFetchResponseHeaders();
-//		if (responseHeaders != null) {
-//			System.out.println("Response headers:");
-//			for (Header header : responseHeaders) {
-//				System.out.println("\t" + header.getName() + ": " + header.getValue());
-//			}
-//		}
-		
+		// Header[] responseHeaders = page.getFetchResponseHeaders();
+		// if (responseHeaders != null) {
+		// System.out.println("Response headers:");
+		// for (Header header : responseHeaders) {
+		// System.out.println("\t" + header.getName() + ": " +
+		// header.getValue());
+		// }
+		// }
+
 		i++;
-}
+	}
 }

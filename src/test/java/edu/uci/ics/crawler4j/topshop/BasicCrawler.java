@@ -91,13 +91,17 @@ public class BasicCrawler extends WebCrawler {
 						if(sizes>1)
 						{
 						propertyString[4] = sizeString[k];
-						propertyString[5] = stockString[k];
+						if(Integer.parseInt(stockString[k])>0){
+							propertyString[5]="In Stock";
+						}else{
+							propertyString[5]="Out Of Stock";
+						}
 						}
 						else
 						{
 							propertyString[4] = "-";
-							propertyString[5] = "-";
 						}
+							bw.append(retailer+",");
 						for (int j = 0; j < propertyString.length; j++) 
 						{
 							bw.append(propertyString[j]

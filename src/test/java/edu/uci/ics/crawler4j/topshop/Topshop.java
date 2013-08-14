@@ -12,28 +12,12 @@ public class Topshop {
 	}
 
 	public static String[] extractProperties(WebDriver driver) {
-		if (!productPageCheck(driver)) {
-			return null;
-		} else {
-
 			String[] breadcrumb = extractBreadcrumb(driver);
 			String[] string = { extractId(driver), extractName(driver),
 					extractPrice(driver), extractColour(driver),
 					extractSize(driver), extractAvailability(driver),
-					breadcrumb[0], breadcrumb[1], sale(driver) };
+					breadcrumb[0], breadcrumb[1], sale(driver), getImage(driver)};
 			return string;
-		}
-	}
-
-	public static boolean productPageCheck(WebDriver driver) {
-		List<WebElement> productPage = driver.findElements(By
-				.className("error"));
-		if (productPage.size() == 0) {
-			return true;
-		} else {
-			System.out.println("Error page returned");
-			return false;
-		}
 	}
 
 	public static String extractId(WebDriver driver) {
@@ -53,7 +37,6 @@ public class Topshop {
 					"],", "");
 			String[] divider = problemSolver.split("START");
 			String size = divider[1].replaceAll("'", "");
-			System.out.println(size);
 			return size;
 		} else
 			return "Size not available";
@@ -79,7 +62,6 @@ public class Topshop {
 			String[] divider = multipleValue.split(",");
 			if (divider != null) {
 				String color = divider[0].substring(16).replace("'", "");
-				System.out.println(color);
 				return color;
 			}
 		}
@@ -158,16 +140,9 @@ public class Topshop {
 		return stockList;
 	}
 
-	public static void waitForElement(WebElement element) {
-		for (int second = 0; second < 5; second++) {
-			if (element.isDisplayed()) {
-				break;
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	public static String getImage(WebDriver driver) {
+			WebElement salePrice = driver.findElement(
+					By.cssSelector("div.wrapper_product_view a img"));
+				return salePrice.getAttribute("src");
 	}
 }

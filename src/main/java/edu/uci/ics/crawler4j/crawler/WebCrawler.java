@@ -50,7 +50,7 @@ import edu.uci.ics.crawler4j.url.WebURL;
  */
 public class WebCrawler implements Runnable {
 	
-	private static String retailer = System.getProperty("retailer.name");
+	public static String retailer = System.getProperty("retailer.name");
 	
 	protected static final Logger logger = Logger.getLogger(WebCrawler.class
 			.getName());
